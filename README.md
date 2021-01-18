@@ -14,7 +14,7 @@
         Selct the DBMS-> Activity: Determine DBMS and data model to use
 
     Physical Design (DBMS Dependent):
-        * Map conceptual model t o logical model components-> Activity: Define tables, columns, relationships, and constraints
+        * Map conceptual model to logical model components-> Activity: Define tables, columns, relationships, and constraints
 
         * Validate logical model using normalization-> Normalized set of tables
 
@@ -220,7 +220,45 @@ SKIM
 * a **secondary key** is defined as a key that is used strictly for data retrieval purposes.
 * Index: an ordered array of index key values and row ID values (pointers). Indexes are generally used to speed up and facilitate data retrieval.
 
+### Integrity Rules
+* Relational database integrity rules are very important to good database design. Relational database management systems (RDBMSs) enforce integrity rules automatically, but it is much safer to make sure your application design conforms to the entity and referential integrity rules mentioned in this chapter. Those rules are summarized below:
+
+        ENTITY INTEGRITY
+        * Requirement: All primary key entries are unique, and no part of a primary key may be null
+        * Purpose: Each row will have a unique identity, and foreign key values can properly reference primary key values
+        * Example, No invoice can have a duplicate number, nor can it be null; in short, all invoices are uniquely identified by their invoice number.
+
+        REFERENTIAL INTEGRITY
+        * Requirement: A foreign key may have either a null entry, as long as it is not a part of its table's primary key, or an entry that matches the primary key value in a table to which it is related (every non-null foreign key value must reference an existing primary key value)
+        * Purpose: It is possible for an attribute not to have a corresponding value, but it will be impossible to have an invalid entry; the enforcement of the referential integrity rule makes it impossible to delete a row in one table whose primary key has mandatory matching foreign key values in another table
+        * Example: A customer might not yet have an assigned sales representative (number), but it will be impossible to have an invalid sales representative (number)
+
+* EXAMPLE: Entity integrity: The CUSTOMER table's primary key is CUS_CODE. The CUSTOMER primary key column has no null entriies, and all entries are unique. Similarly, the AGENT table's primary key is AGENT_CODE, and this primary key column is also free of null entries. Referential integrity. The CUSTOMER table contains a foreign key, AGENT_CODE, that links entries in the CUSTOMER table to the AGENT table. The CUS_CODE row identified by the (primary key) number 10013 contains a null entry it its AGENT_CODE foreign key because Paul F. Olowski does not yet have a sales representative assigned to him. The remaining AGENT_CODE entries in the CUSTOMER table all match the AGENT_CODE entries in the AGENT table.
+
+### Relational Algebra
+* The data in relational tables is of limited value unless the data can be manipulated to generate useful information. This section describes the basic data manipulation capabiities of the relational model. Relational algebra defines the theoretical way of manipulating table contents using relational operators. In Chapter 7, Introduction to SQL, and Chapter 8, Advanced SQL, you will learn how SQL commands can be used to accomplish relational algebra operations.
+
+### Relational Set Operators
+* The relational operators have the property of closure; that is, the use of relational algebra operators on existing relations (tables) produces new relations. Numerous operators have been defined. Some operators are fundamental, while others are convenient but can be derived using the fundamental operators. In this section, the focus will be on the SELECT (or RESTRICT), PROJECT, UNION, INTERSECT, DIFFERENCE, PRODUCT, JOIN, and DIVIDE operators
+
+* **SELECT**, also known as RESTRICT, is referred to as a unary operator because it only uses one table as input. It yields values for all rows found in the table that satisfy a given condition. SELECT can be used to list all the rows, or it can yield only rows that match a specific criterion. In other words, SELECT yields a horizontal subset of a table. **SELECT will not limit the attributes returned so all attributes of the table will be include in the result**
+
+* PROJECT SKIM
+
 END OF CHAPTER
 
 # CHAPTER 4: Entity Relationship (ER) Modeling
+* A *required attribute* is an attribute that must have a value.
+* Attributes have a domain. A domain is the set of possible values for a given attribute. For example, the domain for a grade point average (GPA) attribute is written (0,4) because the lowest possible GPA value is 0 and the highest possible value is 4. The domain for a gender attribute consists of only two possibilities: M or F
+* A *composite attribute*, not to be confused with a composite key, is an attribute that can be further subdivided to yield additional attributes. For example, ADDRESS can be subdivided into street, city, state, and zip code. Similarly, the attribute PHONE_NUMBER can be subdivided into area code and exchagne number. A *simple attribute* isd an attribute that can not be subdivided. For example, age, sex, and marital status would be classified as simple attributes.
+* In the Chen ERM, multivalued attributes are shown by a double line connecting the attribute to the entity.
+
+* If an entity can exist apart from all of its related entities, then it is existence-independent, and it is referred to as a **strong entity** or **regular entity**.
+
+* A **strong relationship** exists when the primary key of the related entity contains a primary key component of the parent entity.
+
+* The Chen notation identifies the weak entity by using a double-walled entity rectangle.
+
+* Remember that the burden of establishing the relatinoship is always placed on the entity that contains the foreign key. In most cases, that entity is on the "many" side of the relationship
+
 page 113
