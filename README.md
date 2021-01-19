@@ -248,17 +248,81 @@ SKIM
 END OF CHAPTER
 
 # CHAPTER 4: Entity Relationship (ER) Modeling
+
+### Attribute
 * A *required attribute* is an attribute that must have a value.
-* Attributes have a domain. A domain is the set of possible values for a given attribute. For example, the domain for a grade point average (GPA) attribute is written (0,4) because the lowest possible GPA value is 0 and the highest possible value is 4. The domain for a gender attribute consists of only two possibilities: M or F
+* Attributes have a **domain**. A domain is the set of possible values for a given attribute. For example, the domain for a grade point average (GPA) attribute is written (0,4) because the lowest possible GPA value is 0 and the highest possible value is 4. The domain for a gender attribute consists of only two possibilities: M or F
 * A *composite attribute*, not to be confused with a composite key, is an attribute that can be further subdivided to yield additional attributes. For example, ADDRESS can be subdivided into street, city, state, and zip code. Similarly, the attribute PHONE_NUMBER can be subdivided into area code and exchagne number. A *simple attribute* isd an attribute that can not be subdivided. For example, age, sex, and marital status would be classified as simple attributes.
-* In the Chen ERM, multivalued attributes are shown by a double line connecting the attribute to the entity.
+* In the Chen ERM, multivalued attributes are **shown by a double line connecting the attribute to the entity.**
+* Identifier
+* **Implementing Multivalued Attributes** Although the conceptual model can handle M:N relationships and multivalued attributes, you should not implement them in the RDBMS. Remember from Chapter 3 that in the relational table, each column and row intersection represents a single data value. So, if multivalued attributes exist, the designer must decide on one of two possible courses of action:
+1. Within the original entity, create several new attributes, one for each component of the original multivalued attribute. For example, the CAR entity's attribute CAR_COLOR can be split to create the new attributes CAR_TOPCOLOR, CAR_BODYCOLOR, and CAR_TRIMCOLOR, which are then assigned to the CAR entity.
+* Although this solution seems to work, its adoption can lead to major structural problems in the table. It is only acceptable if every instance will have the same number of value for the multivalued attribute, and no instance will ever have more values. However, even in this case, **it is a gamble that new changes in the environment will never create a situation where an instance would have more values than before.** For example, if additional color components--such as logo color--are added for some cars, the table structure must be modified to accommodate the new color section. In that case, cars that do not have such color sections generate nulls for the nonexistent components, or their color entries for those sections are entered as N/A to indicate "not applicable" (The solution above is to split a multivalued attribute into new attributes, but imagine the problems this type of solution would cause if it were applied to an employee entity that contains employee degrees and certifications. If some employees have 10 degrees and certifications while most have fewere or none, the number of degree/certification attributes would be 10, and most of those attribute values would be null for most employees). In short, although you have seen solution I applied, it is not always acceptable.
+2. Create a new entity composed of the original multivalued attribute's components. This new entity allows the designer to define color for different sections of the car. Then, this new CAR_COLOR entity is related to the original CAR entity in a 1:M relationship
+* Using the approach above, you even get a fringe benefit: you can now assign as many colors as necessary without having to change the table strcutre. This is the preferred awy to deal with multivalued attributes. Creating a new entity in a 1:M relationship with the original enttiy yields several benefits: it is a more flexible, expandble solution, and it is compatible with the relational model!
 
-* If an entity can exist apart from all of its related entities, then it is existence-independent, and it is referred to as a **strong entity** or **regular entity**.
+* **Derived attribute** SKIM
 
-* A **strong relationship** exists when the primary key of the related entity contains a primary key component of the parent entity.
+#### Relationship
+* The term **connectivity** is used to describe the relationship classification.
+* **Cardinality** expresses the minimum and maximum number of entity occurrences associated with one occurrence of the related entity. In the ERD, cardinality is indicated by placing the appropriate numbers beside the entities, using the format (x,y). The first value represents the minimum number of associated entities, while the second value represents the maximum number of associated entities.
+
+##### Existence Dependence
+* An entity is said to be existence-dependent if it can exist in the database only when it is associated with another related entity occurence. **In implementation terms, an entity is existence-dependent if it has a mandatory foreign key--that is, a foreign key attribute can not be null.** For example, if an employee wants to claim one or more dependents for tax-withholding purposes, the relationship "EMPLOYEE claims DEPENDENT" would be appropriate. In that case, the DEPENDENT entity is clearly existence-dependent on the EMPLOYEE entity because it is impossible for the dependent to exist apart fromm the EMPOYEE in the database.
+* If an entity can exist apart from all of its related entities, then it is **existence-independent**, and it is referred to as a **strong entity** or **regular entity**. For example, suppose that the XYZ Corporation uses parts to produce its products. Furthermore, suppose that some of those parts are prdouced in-house and other parts are bought from vendors. In that scenerio, it is quite possible for a PART to exist independently from a VENDOR in the relationship "PART is supplied by VENDOR" because at least some of the part are not supplied by a vendor. Therefore, PART is existence-independent from VENDOR.
+
+##### Relationship Strength
+* The concept of relationship strength is based on how the primary key of a related entity is defined. To implement a relationship, the primary key of one entity (the parent entity, normally on the "one" side of the one-to-many relationship) appears as a foreign key in the related entity (the child entity, mostly the entity on the "many" side of the one-to-many relationship). Sometimes, the foreign key also is a primary key component in the related entity. For example, the CAR entity primary key (CAR_VIN) appears as both a primary key component and a foreign key in the CAR_COLOR entity. 
+
+* **Weak (Non-Identitfying) Relationship** A weak relationship, also known as a non-identifying relationship, **exist if the primary key of the related entity does not contain a primary key of the parent entity**. By default, relationships are established by having the primary key of the parent entity appear as a foreign key on the relationship entity (also known as the child entity). For example, suppose the 1:M relationship between COURSE and CLASS is defined as:
+
+        COURSE(CRS_CODE, DEPT_CODE, CRS_DESCRIPTION, CRS_CREDIT)
+
+        CLASS (CLASS_CODE, CRS_CODE, CLASS_SECTION, CLASS_TIME, ROOM_CODE, PROF_NUM)
+
+* In this example, the CLASS primary key did not inherit a primary key compoentn from the COURSE entity. In this case, a weak relationship exists between COURSE and CLASS because CRS_CODE (the primary key of the parent entity) is only foreign key in the CLASS entity.
+
+* **Strong (Identifying) Relationships** A strong (identifying) relationship exists when the primary key of the related entity contains a primary key component of the parent entity. For example, suppose the 1:M relationship between COURSE and CLASS is defined as:
+
+        COURSE (CRS_CODE, DEPT_CODE, CRS_DESCRIPTION, CRS_CREDIT)
+
+        CLASS (CRS_CODE, CLASS_SECTION, CLASS_TIME, ROOM_CODE, PROF_NUM)
+
+* In this case, the CLASS entity primary key is composed of CRS_CODE and CLASS_SECTION. Therefore, a strong relationship exists between COURSE and CLASS because CRS_CODE (the primary key of the parent entity) is a primary key component in the CLASS entity. In other words, the CLASS primary key did inherit a primary key component from the COURSE entity (Note that the CRS_CODE in CLASS is also the FK to the COURSE entity).
+* The Crow's Foot notation depicts the strong (identifying) relationship with a solid line between the entities.
+
+
+#### Weak Entities
+* In contrast to the strong or regular entity mentioned, a **weak entity** is one that meets two conditions:
+1. The entity is existence-dependent; it can not exist without the entity with which it has a relationship
+2. The entity has a primary key that is partially or totally derived from the parent entity in the relatinoship.
+* For example, a company insurance polilcy insures an employee and any dependents. For the purpose of describing an insurance policy, an EMPLOYEE might or might not have a DEPENDENT, but the DEPENDENT must be associated with an EMPLOYEE. Moreover, the DEPENDENT can not exist without the EMPLOYEE; that is, a person can not get insurance coverage as a dependent unless the person is a dependent of an employee. DEPENDENT is the weak entity in the relationship "EMPLOYEE has DEPENDENT". 
+* Note that the Chen notation identifies the weak entity by using a double-walled entity rectangle. The Crow's Foot notation generated by Visio Professional uses the relationship line and the PK/FK designation to indicate whether the related entity is weak. A strong (identifying) relationship indicates that the related entity is weak. Such a relationship means that both conditions have been met for the weak entity definition--the related entity is existence dependent, and the PK of the related entity contains a PK component of the parent entity.
+* Remember that the weak entity inherits part of its primary key from its strong counterpart. For example, at least, part of the DEPENDENT entity's key was inherited from the EMPLOYEE entity:
+
+        EMPLOYEE (EMP_NUM, EMP_LNAME, EMP_FNAME, EMP_INITIAL, EMP_DOB, EMP_HIREDATE)
+
+        DEPENDENT (EMP_NUM, DEP_NUM,DEP_FNAME, DEP_DOB)
+
+* The implementation of the relationship between the weak entity (DEPENDENT) and its parent or strong counterpart (EMPLOYEE). Note that DEPENDENT's primary key is composed of two attributes, EMP_NUM and DEP_NUM, and that EMP_NUM was inherited from EMPLOYEE.
+
+* Keep in mind that the database designer usually determines whether an entity can be described as weak based on the business rules. An examination might cause you to conclude that CLASS is a weak entity to COURSE. After all, it seems clear that a CLASS can not exist without a COURSE, so there is existence dependence. For example, a student can not enroll in the Accounting I class ACCT-211, Section 3 (CLASS_CODE 10014), unless there is an ACCT-211 course. **However, note that the CLASS table's primary key is CLASS_CODE, which is not derived from the COURSE parent entity.** That is, CLASS may be represented by:
+
+        CLASS (CLASS_CODE, CRS_CODE, CLASS_SECTION, CLASS_TIME, ROOM_CODE, PROF_NUM)
+
+* The second weak entity requirement has not been met, therefore, by defintion, the CLASS entity may not be classified as weak. On the other hand, if the CLASS entity's primary key had been defined as a composite key composed of the combination CRS_code and CLASS_SECTION, CLASS coould be represented by:
+
+        CLASS (CRS_CODE, CLASS_SECTION, CLASS_TIME, ROOM_CODE, PROF_NUM)
+
+* In that case, the CLASS primary key is partial derived from COURSE because CRS_CODE is the COURSE table's primary key. Given this decision, CLASS is a weak entity by definition. 
+
+##### Relationship Participation
+* Participation in an entity relationship is either optional or mandatory. 
+* **Optional participation** means that one entity occurrence does not require a corresponding entity occurrence in a particular relationship. For example, in the "COURSE generates CLASS" relationship, you noted that at least some courses do not generate a class. In other words, an entity occurrence (row) in the COURSE table does not necessarily require the existence of a corresponding entity occurence in the CLASS table. Therefore, **the CLASS entity is considered to be optional to the COURSE entity** MY: it just means the cardinality is 0
+
 
 * The Chen notation identifies the weak entity by using a double-walled entity rectangle.
 
 * Remember that the burden of establishing the relatinoship is always placed on the entity that contains the foreign key. In most cases, that entity is on the "many" side of the relationship
 
-page 113
+page 131
