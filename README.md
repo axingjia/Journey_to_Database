@@ -264,6 +264,8 @@ END OF CHAPTER
 * **Derived attribute** SKIM
 
 #### Relationship
+* Relationship is an association between two entities
+
 * The term **connectivity** is used to describe the relationship classification.
 * **Cardinality** expresses the minimum and maximum number of entity occurrences associated with one occurrence of the related entity. In the ERD, cardinality is indicated by placing the appropriate numbers beside the entities, using the format (x,y). The first value represents the minimum number of associated entities, while the second value represents the maximum number of associated entities.
 
@@ -325,4 +327,64 @@ END OF CHAPTER
 
 * Remember that the burden of establishing the relatinoship is always placed on the entity that contains the foreign key. In most cases, that entity is on the "many" side of the relationship
 
+## Developing an ER Diagram
+* Building an ERD usually involves the following activities:
+
+        * Create a detailed narrative of  the organization's description of operations
+        * Identify the business rules based on the description of operations
+        * Identify the main entities and relationships from the business rules
+        * Develop the initial ERD
+        * Identify the attributes and primary keys that adequately describe the entities
+        * Revise and review the ERD
+
+* During the review process, additional objectives, attributes, and relationships probably will be uncovered. Therefore, the basic ERM will be modified to incorporate the newly discovered ER commponents. Subsequently, another round of reviews might yield additional components or clarification of the existing diagram. **The process is repeated until the end users and designers agree that the ERD is a fair representation of the organization's activites and functions.**
+* **During the design process, the database designer does not depend simply on interview to help define entities, attributes, and relationships. A surprising amount of information can be gathered by examining the business forms and reports that an organization uses in its daily operations.
+
+* It is again appropriate to evalute the reason for maintaining the 1:1 relationship between PROFESSOR and SCHOOL in "PROFESSOR is dean of SCHOOL" relationship. It is worth repeating that the existence of 1:1 relationships often indicates a misidentification of attributes as entity. In this case, the 1:1 relationship could easily be eliminated by storing the dean's attributes in the SCHOOL entity. This solution would also make it easier to answer the queries "Who is the dean?" and "What are the dean's credentials?" The downside of this solution is that it requires the duplication of data that is already stored in the PROFESSOR table, **thus setting the stage for anomalies**. However, because each school is run by a single dean, the problem of data duplication is rather minor. The selection of one approach over another often depends on information requirements, transaction speed, and the database designer's professional judgment. **In short, do not use 1:1 relationship lightly, and make sure that each 1:1 relationship within the database design is defensible.
+
+## 4.3 Database Design Challenges: Conflicting Goals
+* Database designers must often make design compromises that are triggered by conflicting goals, such as adherence to design standards (design elegance), processing speed, and information requirements
+* *Design standards*. The database design must conform to design standards. Such standard guide you in developing logical structures that minimize data redundancies, thereby minimizing the likelihood that destructive data anomalies will occur. You have also learned how standards prescribe avoid nulls to the greatest extend possible. In fact, you have learned that design standards govern the presentation of all compoents within the database design. In short, design standards allow you to work with well-defined components and to evalute the interaction of those components with some precision. Without design standards, it is nearly impossible to formulate a proper design process, to evaluate an existing design, or to trace the likely logical impact of changes in design.
+* *Processing speed*. In many organizations, particularly those that generate large numbers of transactions, high processing speeds are often a top priority in database design. High processing speed means minimal access time, which may be achieved by minimizing the number and complexity of logically desirable relationships. For example, a "perfect" design might use a 1:1 relationship to avoid nulls, while a design that emphasizes higher transaction speed might combine the two tables to avoid the use of an additional relationship, using dummy entries to avoid the nulls. If the focus is on data-retrieval speed, you might also be forced to include derived attributes in the design.
+* Information requirement. The quest for timely information might be the focus of database design. Complex information requirements may dictate data transformation, and they may expand the number of entities and attributes within the design. Therefore, the database may have to sacrifice some of its "clean" design structure and high transaction speed to ensure maximum information generation. For example, suppose that a detailed sales report must be generate periodically. The sales report includes all invoice subtotals, taxes, and totals, even the invoice lines include subtotals. If the sales report include hundreds of thousands (or even millions) of invoices, computing the total, taxes, and subtotals is likely to take some time. If those computation had been made and the results had been stored as derived attributes in the INVOICE and LINE tables at the time of the transaction, the real-time transaction speed might have declined
+
+# Chapter 6: Normalization of Database Tables
+* Normalization is a process for evaluating and correcting tables structures to minimize data redundancies, thereby reducing the likelihood of data anomalies
+* Normalization works through a series of stages called normal forms. The first three stage are described as first normal form (1NF), second normal form (2NF), and third normal form (3NF). From a structual point of view, 2NF is better than 1NF, and 3NF is better than 2NF. For most purposes in business database design, 3NF is as high as you need to go in the normalization process. However, you will discover that properly designed 3NF structures also meet the requirements of fourth normal form (4NF).
+* Althoug normalization is a very important ingredient in database design, you should not assume that the highest level of normalization is always the most desirable. Generally, the higher the normal form, the more relational join operations you need to produce a specified output. Also, more resources are required by the database system to respond to end-user queries. A successful design must also consider end-user demand for fast performance. **Therefore, you will occasionally need to denormalize some portions of a database design to meet performance requirements. The price you pay for increased performance through denormalization is greater data redundancy.**
+
+* First normal form (1NF): Table format, no repeating groups, and PK identified
+* Second normal form (2NF): 1NF and no partial dependencies
+* Third normal form (3NF): 2NF and no transitive dependencies
+* Boyce-Codd normal form (BCNF): Every determinant is a candidate key (sepcial case of 3NF)
+* Fourth normal form (4NF): 3NF and no independent multivalued dependencies
+
 page 131
+
+## Conversion to First Normal Form
+* Step 1: Eliminate the Repeating Groups
+* Step 2: Identify the Primary key
+* Step 3: Identify all dependencies
+
+## Conversion to Second Normal Form
+* Conversion to 2NF occurs only when the 1NF has a commposite primary key. If the 1NF has a single-attribute primary key, then the table is automatically in 2NF. The 1NF-to-2NF conversion is simple
+* Step 1: Make new tables to eliminate partial dependencies
+* Step 2: Reassign Corresponding dependent attributes
+* A table is in 2NF when: 1. it is in 1NF; and 2. It includes no partial dependencies, no attribute is dependent on only a portion of the primary key
+
+## Conversion to Third Normal Form (3NF)
+* Step 1: Make new tables to eliminate transitive dependencies
+* Step 2: Reassign corresponding dependent attributes
+* A table is in 3NF when: 1. It is in 2NF; 2. It contains no transitive dependencies
+
+* It is interesting to note the similarities between resolving 2NF and 3NF problems. To convert a table from 1NF to 2NF, it is necessary to remove the partial dependencies. To convert a table from 2NF to 3Nf, it is necessary to remove the transitive dependencies. No matter whether the "problem" dependency is a partial dependency or a transitive dependency, the solution is the same: create a new table for each problem dependency. The determinant of the problem dependency remains in the original table and is placed as the primary key of the new table. The dependents of the problem dependency are removed from the original table and placed as nonprime attributes in the new table.
+
+* A transitive dependency was defined to exist when one nonprime attribute determined another nonprime attribute.
+* In the presence of multiple candidate keys, \
+a nonprime attribute as an attribute that is not a part of any candidate key
+
+## 6.4 Improving the Design
+* A surrogate key, is an artificial PK introduced by the designer with the purpose of simplifying the assignment of primary keys to tables. Surrogate keys are usually numeric, they are often generated automatically by the DBMS, they are free of semantic context (they have no special meaning), and they are usually hidden from the end users.
+* An **atomic attribute** is one that can not be further subdivided. Such an attribute is said to display **atomicity**. Clearly, the use of the EMP_NAME is EMPLOYEE table is not atomic because EMP_NAME can be decomposed into a last name, a first name, and an initial.
+
+page 220
