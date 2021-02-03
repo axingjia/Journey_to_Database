@@ -348,6 +348,77 @@ END OF CHAPTER
 * *Processing speed*. In many organizations, particularly those that generate large numbers of transactions, high processing speeds are often a top priority in database design. High processing speed means minimal access time, which may be achieved by minimizing the number and complexity of logically desirable relationships. For example, a "perfect" design might use a 1:1 relationship to avoid nulls, while a design that emphasizes higher transaction speed might combine the two tables to avoid the use of an additional relationship, using dummy entries to avoid the nulls. If the focus is on data-retrieval speed, you might also be forced to include derived attributes in the design.
 * Information requirement. The quest for timely information might be the focus of database design. Complex information requirements may dictate data transformation, and they may expand the number of entities and attributes within the design. Therefore, the database may have to sacrifice some of its "clean" design structure and high transaction speed to ensure maximum information generation. For example, suppose that a detailed sales report must be generate periodically. The sales report includes all invoice subtotals, taxes, and totals, even the invoice lines include subtotals. If the sales report include hundreds of thousands (or even millions) of invoices, computing the total, taxes, and subtotals is likely to take some time. If those computation had been made and the results had been stored as derived attributes in the INVOICE and LINE tables at the time of the transaction, the real-time transaction speed might have declined
 
+# Chapter 5: Advanced Data modeling
+* entity supertypes, subtypes, and entity clustering
+* primary key identification and placement
+* flexibility
+* specialization hierarchies. Although Microsoft Viso 2010 and earlier versions handled these constructs neatly, newere versions of Visio starting with Microsoft Visio 2013 removed support for many database modeling activities, including specializatino hierarchies.
+
+* The extended entity relationship model (EERM), sometimes referred to as the enhanced entity relationship model, is the result of adding more semantic constructs to the original ER model.
+* main EER model constructs--entity supertypes, entity subtypes, and entity clustering
+
+## 5-1a Entity Supertypes and Subtypes
+* The growing of employees into various types provides two important benefits: it avoids unnecessary nulls in attributes when some employees have characteristics that are not shared by other employees; it enables a particular employee type to participate in relationships that are unique to that employee type.
+* To illustrate those benefits, you will explore the case of an aviation busienss that employs pilots, mechanics, secretaries, accountants, database managers, and many other types of employees. SKIP
+* An **entity supertype** is a gernic entity type that is related to one or more entity subtypes. **The entity supertype contains common characteristics, and the entity subtypes each contain their own unique characteristics.
+
+* Two criteria help the designer determine when to use subtypes and supertypes: 1. There must be different, identifiable kinds or types of the entity in the user's environment; 2. The different kinds or types of instances should each have one or more attributes that are unique to that kind or type of instance.
+* CLERK would not be an acceptable subtype of EMPLOYEE because it only satisfies one of the criteria--it is an identifiable kind of employee--but none of the attributes are unique to just clerks.
+
+## 5-1b Specialization Hierarchy
+* Entity supertypes and subtypes are organized in a specialization hierarchy, which depicts the arrangement of higher-level entity supertypes and lower-level entity subtypes
+* The relationship depicted within the specialization hierachy are sometimes described **in terms of "is-a" relationships**
+* A specialization hierachy provides the means to: 1. support attribute inheritance; 2. Define a special supertype attribute known as the subtype discriminator; 3. Define disjoint or overlapping constraints and complete or partial constraints; 
+
+## 5-1c Inheritance
+* One important inheritance characteristics is that all entity subtypes inherit their primary key attribute from their supertype
+* At the implementation level, the supertype and its subtype depicted in the specialization hierarchy maintain 1:1 relationship. For example, the specialization hierachy lets you replace the undesirable EMPLOYEE table structure with two tables--one representing the supertype EMPLOYEE and the other representing the subtype PILOT.
+
+## 5-1d Subtype Discriminator
+* A **subtype discriminator** is the attribute in the supertype entity that determines to which subtype the supertype occurence is related
+* It is common practice to show the subtype discriminator and its value for each subtype in the ERD. However, not all ER modeling tools follow that practice. For example, Microsoft Visio shows the subtype discriminator but not its value. 
+* Note that the default comparison condition for the subtype discriminator attribute is the equality comparison. However, in some situations the subtype discriminator is not necessarily based on an equality comparison. For example, based on business requirements, you might create two new pilot subtypes: pilot-in-command (PIC)-qualified and copilot-qualified only. A PIC-qualified pilot must have more than 1500 PIC flight hours. In this case, the subtype discriminator would be "Flight_Hours", and the criteria would be >1500 or <=1500 respectively.
+
+## 5-1e Disjoint and Overlapping Constraints
+* An entity supertype can have disjoint or overlapping entity subtypes. In the aviation example, an employee can be a pilot, a mechanic, or an accountant. Assume that one of the business rules dictates that an employee can not belong to more than one subtype at a time; that is, an employee can not be a pilot and a mechanic at the same time. **Disjoint subtypes**, also known as **nonoverlapping subtypes**, are subtypes that contain a unique subset of the supertype entity set; in other words, each entity instance of the supertype can appear in only one of the subtype. For example, an employee (supertype) who is a pilot (subtype) can appear only in the PILOT subtype, not in any of the other subtype. In an ERD, such disjoint subtypes are indicated by the letter d inside the category shape.
+* On the other hand, if the business rule specifies that employees can have multiple classifications, the EMPLOYEE supertype may contain overlapping job classification subtypes. **Overlapping subtypes** are subtypes that contain nonunique subsets of the supertype entity set; that is, each entity instance of the supertype may apepar in more than one subtype. For example, in a university environment, a person may be an employee, a student, or both. In turn, an employee may be a professor as well as an administrator.
+* It is common practice to show disjoint and overlapping symbols in the ERD. However, not all ER modeling tools follow that practice. For example, by default, **Visio shows only the subtype discriminator (using the Category shape), but not the disjoint and overlapping symbols. The Visio text tool was used to manually add the d and o symbols in the previous figures.**
+* As you learned earlier in this section, the implementation of disjoint subtypes is based on the value of the subtype discriminator attribute in the supertype. However, implementing overlapping subtypes requires the use of one discriminator attribute for each subtype. For example, in the case of the Tiny College database design in Chapter 4, a professor can also be an administrator. Therefore, the EMPLOYEE supertype would have the subtype discriminator attributes and values shown below.
+
+    | Professor | Administrator |
+    |----|----|
+    | Y | N |
+    | N | Y |
+    | Y | Y |
+
+## 5-1f Completeness Constraint
+* The completeness constraint specifies whether each entity supertype occurrence msut also be a member of at least one subtype. The completeness constraint can be partial or total. **Partial completeness** means that not every supertype occurence is a member of a subtype; some supertype occurrences may not be members of any subtype. Total completeness means that every supertype occurrence must be a member of at least one subtype.
+* **A single horizontal line under the circle represents a partial completeness constraint; a double horizontal line under the circle represents a total completeness constraint.
+
+        Partial completeness / disjoint constraint: supertype has optional subtypes. subtype discriminator can be null; subtype set are unique
+
+        Total completeness / disjoint constraint: every supertype occurrence is a member of only one subtype; subtype discriminator can not be null; subtype sets are unique
+
+        Partial completeness / overlapping constraint: supertype has optional subtypes; subtype discriminators can be null; subtype sets are not unique
+
+        Total completeness / Overlapping constraint: each supertype occurrence is a member of at least one subtype; subtype discriminators can not be null; subtype sets are not unique
+
+## 5-1g Specialization and Generalization
+* You can use various approaches to develop entity supertypes and subtypes. For example, you can first identify a regular entity and then identify all entity subtypes based on their distinguishing characteristics. You can also start by identifying multiple entity types and then later extract the common characteristics of those entities to create a higher-level supertype entity.
+* **Specialization** is the top-down process of identifying lower-level, more specific entity subtypes from a higher-level entity supertype. Specialization is based on grouping the unique characteristics and relationships of the subtypes. In the aviation example, you used specialization to identify multiple entity subtypes from the original employee supertype. **Generalization** is the bottom-up process of identifying a higher-level, more generic entity supertype from lower-level entity subtypes. Generalization is based on groupping the common characteristics and relationships of the subtypes. For example, you might identify multiple types of musical instruments: piano, violin, and guitar. Using the generalization approach, you could identify a "string instrument" entity supertype to hold the common characteristic of the multiple subtypes.
+
+## 5-2 Entity Clustering
+* Developing an ER diagram entails the discovery of possibly hundreds of entity types and their respective relationships. Generally, the data modeler will develop an initial ERD that contains a few entities. As the design approaches completion, the ERD will contain hundreds of entities and relationships that crowd the diagram to the point of making it unreadable and inefficient as a communication tool. In those cases, you can use entity clusters to minimize the number of entities shown in the ERD.
+* An **entity cluster** is a "virtual" entity type used to represent multiple entities and relationships in the ERD. An entity cluster is formed by combining multiple interrelated entities into a single, abstract entity object. An entity cluster is considered "virtual" or " abstract" in the sense that it is not actually an entity in the final ERD. instead, it is a temporary entity used to represent multiple entities and relationships, with the purpose of simplifying the ERD and thus enhancing its readability.
+* Note also that the ERD does not show attributes for the entities. When using entity clusters, the key attributes of the combined entities are no longer available. Without the key attributes, primary key inheritance rules change. In turn, the change in the inheritance rules can have undesirable consequences, such as changes in relationships--from identifying to nonidentifying or vice versa--and the loss of foreign key attributes from some entities. **To eliminate those problems, the general rule is to avoid the display of attributes when entity clusters are used.**
+
+## 5-3 Entity Integrity: Selecting Primary Keys
+
+### Guidelines
+* First, you should understand the function of a primary key. Its main function si to uniquely identify an entity instance or row within a table. In particular, given a primary key value--that is, the determinant--the relational model can determine the value of all dependent attributes that "describe" the entity. **Note that identifcation and description are separate semantic constructs in the model.** *The function of the primary keys is to guarantee entity integrity, not to "describe" the entity*. 
+
+
+
 # Chapter 6: Normalization of Database Tables
 * Normalization is a process for evaluating and correcting tables structures to minimize data redundancies, thereby reducing the likelihood of data anomalies
 * Normalization works through a series of stages called normal forms. The first three stage are described as first normal form (1NF), second normal form (2NF), and third normal form (3NF). From a structual point of view, 2NF is better than 1NF, and 3NF is better than 2NF. For most purposes in business database design, 3NF is as high as you need to go in the normalization process. However, you will discover that properly designed 3NF structures also meet the requirements of fourth normal form (4NF).
@@ -358,8 +429,6 @@ END OF CHAPTER
 * Third normal form (3NF): 2NF and no transitive dependencies
 * Boyce-Codd normal form (BCNF): Every determinant is a candidate key (sepcial case of 3NF)
 * Fourth normal form (4NF): 3NF and no independent multivalued dependencies
-
-page 131
 
 ## Conversion to First Normal Form
 * Step 1: Eliminate the Repeating Groups
@@ -388,3 +457,5 @@ a nonprime attribute as an attribute that is not a part of any candidate key
 * An **atomic attribute** is one that can not be further subdivided. Such an attribute is said to display **atomicity**. Clearly, the use of the EMP_NAME is EMPLOYEE table is not atomic because EMP_NAME can be decomposed into a last name, a first name, and an initial.
 
 page 220
+
+END Chapter 6
