@@ -360,12 +360,13 @@ END OF CHAPTER
 ## 5-1a Entity Supertypes and Subtypes
 * The growing of employees into various types provides two important benefits: it avoids unnecessary nulls in attributes when some employees have characteristics that are not shared by other employees; it enables a particular employee type to participate in relationships that are unique to that employee type.
 * To illustrate those benefits, you will explore the case of an aviation busienss that employs pilots, mechanics, secretaries, accountants, database managers, and many other types of employees. SKIP
-* An **entity supertype** is a gernic entity type that is related to one or more entity subtypes. **The entity supertype contains common characteristics, and the entity subtypes each contain their own unique characteristics.
+* An **entity supertype** is a gernic entity type that is related to one or more entity subtypes. **The entity supertype contains common characteristics, and the entity subtypes each contain their own unique characteristics.**
 
 * Two criteria help the designer determine when to use subtypes and supertypes: 1. There must be different, identifiable kinds or types of the entity in the user's environment; 2. The different kinds or types of instances should each have one or more attributes that are unique to that kind or type of instance.
 * CLERK would not be an acceptable subtype of EMPLOYEE because it only satisfies one of the criteria--it is an identifiable kind of employee--but none of the attributes are unique to just clerks.
 
 ## 5-1b Specialization Hierarchy
+* [def] special hierarchy: A hierarchy based on the top-down process of identifying lower-level, more specific entity subtypes from a higher-level entity supertype. Specialization is based on grouping unique characteristics and relationships of the subtypes.
 * Entity supertypes and subtypes are organized in a specialization hierarchy, which depicts the arrangement of higher-level entity supertypes and lower-level entity subtypes
 * The relationship depicted within the specialization hierachy are sometimes described **in terms of "is-a" relationships**
 * A specialization hierachy provides the means to: 1. support attribute inheritance; 2. Define a special supertype attribute known as the subtype discriminator; 3. Define disjoint or overlapping constraints and complete or partial constraints; 
@@ -416,6 +417,72 @@ END OF CHAPTER
 
 ### Guidelines
 * First, you should understand the function of a primary key. Its main function si to uniquely identify an entity instance or row within a table. In particular, given a primary key value--that is, the determinant--the relational model can determine the value of all dependent attributes that "describe" the entity. **Note that identifcation and description are separate semantic constructs in the model.** *The function of the primary keys is to guarantee entity integrity, not to "describe" the entity*. 
+* Second, primary keys and foreign keys are used to implement relationships among entities. However, the implementation of such relationships is done mostly behind the scenes, hidden from end users. In the real world, end users identify objects based on the characteristics they know about the object. For example, when shopping at a grocery store, you select products by taking them from a display shelf and reading the labels, not by looking at the stock number. It is wise for database applications to mimic the human selection process as much as possible. Therefore, database applications should let the end user choose as much as possible. Therefore, database applications should let the end user choose among multiple descriptive narratives of different objects, using primary key values behind the scenes. Keep those concepts in mind, look at Table 5.3, which summarizes desirable primary key characteristics.
+
+#### 5-3c When to Use Compositive Primary Keys
+* In the previous section, you learned about the desirable characteristics of primary keys. For example, you learned that the primary key should use the minimum number of attributes possible. However, that does not mean that composite keys are not permitted in a model. In fact, compostie primary keys are particular useful in two cases:
+
+        * As identifiers of composite entities, in which each primary key combination is allowed only once in the M:N relationship
+        * As identifiers of weak entities, in which the weak entity has a strong identifying relationship with the parent entity
+
+* To illustrate the first case, assume that you have a STUDENT entity set and a CLASS entity set. In addition, assume that those two sets are related in an M:n relationship via an ENROLL entity set, in which each student or class combinatino may appear only once in the composite entity
+* The commposite primary key automatically provides the benefit of ensuring that there can not be duplicate values--that is, it ensures that the same student can not enroll more than once in the same class.
+* In the second case, a weak entity in a strong identifying relationship with a parent entity is normally used to represent one of two situations:
+
+        1. A real-world object that is existence-dependent on another real-world object. Such objects are distinguishable in the real world. A dependent and an employee are two separate people who exist independently of each other. However, such objects can exist in the modal only when they relate to each other in a strong identifying relationship. For example, the relationship between EMPLOYEE and DEPENDENT is one of existence dependency, in which the primary key of dependent entity is a composite key that contains the key of the parent entity.
+        2. A real-world object that is represented in the data model as two separate entities in a strong identifying relationship. For example, the real-world invoice object is represented by two entities in a data model: INVOICE and LINE. Clearly, the LINE entity does not exist in the real world as the independent object but as part of an INVOICE.
+* In both situations, having a strong identifying relationship ensures that the dependent entity can exist only when it is related to the parent entity. In summary, the selection of a composite primary key for composite and weak entity types provides benefits that enhance the integrity and consistency of the model.
+
+#### 5-3d When to Use Surrogate Primary Keys
+* In some instances a primary key doesn't exist in the real world or the existing natural key might not be a suitable primary key. In these cases, it is standard practice to create a surrogate key. A surrogate key is a primary key created by the datbase designer to simplify the identification of entity instance. The surrogate key has no meaning in the user's environment--it exists only to distinguish one entity instance from another (just like any other primary key). One practical advantage of a surrogate key is that because it has no intrinsic meaning, values for it can be generated by the DBMS to ensure that unique values are always provided.
+
+#### 5-4 Design Cases: learning Flexible Database Design
+* Data modeling and database design require skills that are acquired through experience. In turn, experience is acquired through practice--regular and frequent repetition, applying the concepts learned to specific and different design problems. This section presents four special design cases that highlight the importance of flexible designs, proper identification of primary keys, and placement of foreign keys.
+
+##### 5-4a Design Case 1: Implementing 1:1 Relationship
+* Foreign keys work with primary keys to properly implement relationships in the relational model. The basic rule is very simple: put the primary key of the "one" side (the parent entity) on the "many" side (the dependent entity) as a forign key. However, where do you place the foreign key when you are working with a 1:1 relationship? For example, take the case of a 1:1 relationship between EMPLOYEE and DEPARTMENT based on teh business rule "one EMPLOYEE is the manager of one DEPARTMENT, and one DEPARTMENT is managed by one EMPLOYEE". In that case, there are **two options** for selecting and placing the foreing key:
+1. Place a foreign key in both entities. This option is derived from the basic rule you learn in Chapter 4. Place EMP_NUM as a foreign key in DEPARTMENT, and place DEPT_ID as a foreign key in EMPLOYEE. However, this solution is not recommended because it duplicates work, and it could conflict with other existing relationship. (Remember that DEPARTMENT and EMPLOYEE also participate in a 1:M relationship--one department employs many employees)
+2. Place a foreign key in one of the entities. In that case, the primary key of one of the two entities appear as a foreign key in the other entity. That is the preferred solution, but a question remains: which primary key should be used as a foreign key? The answer is found in Table 5.5, which shows the rationale for selecting the foreign key in a 1:1 relationship based on the relationship properties in the ERD.
+
+        TABLE 5.5: SELECTION OF FOREIGN KEY IN A 1:1 RELATIONSHIP
+        Case I: One side is mandatory and the other side
+            Action: place the PK of the entity on the mandatory side in the entity on the optional side as a FK, and make the FK mandatory
+        Case II: Both sides are optional
+            Action: Select the FK that causes the fewest nulls, or place the FK in the entity in which the (relationship) role is played
+        Case III: Both sides are mandatory
+            Action: See Case II, or consider revising your model to ensure that the two entities do not belong together in a single entity.
+
+##### 5-4b Design Case 2: Maintaining History of Time-Variant Data
+* Company managers generally realize that good decision making is based on the information generated through the data stored in databases. Such data reflects both curent and past events. Company managers use the data stored in databases to answer questions such as "how do the current company profits compared to those of previous years?" and "What are XYZ product's sales trends?" In other words, the data stored in databases reflects not only current data but also historic data.
+* Normally, data changes are managed by replacing the existing attribute value with the new value, without regard to the previous value. However, in some situations the history of values for a given attribute must be preserved. From a data-modeling point of view, **time-variant data** refers to data whose values change over time and for which you must keep a history of the data changes. You could argue that all data in a database is subject to change over time and is therefore time variant. However, some attribute values, such as your date of birth or your Social Security number, are not time variant. On the other hand, attributes such as you student GPA or your bank account balanaces are subject to change over time. Sometimes the data changes are externally originated and event driven, such as a product price change. On other occasions, changes are based on well-defined schedules, such as the daily stock quote "open" and "close" values.
+* The storage of time-variant data requires changes in the data model; the type of change depends on the nature of the data. Some time-variant data is equivalent to having a multivalued attribute in your entity. To model this type of time-variant data, you msut create a new entity in a 1:M relationship with the original entity. This new entity will contain the new value, the date of the change, and any other attribute that is pertinent to the event being modeled. For example, if you want to track salary histories for each employee, then the EMP_SALARY attribute become multivalued, as shown in Figure 5.9. In this case, for each employee, there will be one or more records in the SALARY_HIST entity, which stores the salary amount and the date when the new salary goes into effect.
+
+        Figure 5.9 Maintaining Salary History
+        EMPLOYEE (EMP_NUM (PK), EMP_LNAME,EMP_FNAME,EMP_INITIAL,EMP_E_MAIL,JOB_CODE,EMP_SALARY)
+        SALARY_HIST (EMP_NUM(PK,FK1), SALARY_START_DATE(PK), SALARY_AMT)
+
+* Other time-variant data can trun a 1:M relationship in to an M:N relationship. Assume that in addition to employee data, your data model includes data about the different departments in the organization and which employee manages each department. Assuming that each department is managed by only one employee and each employee can manage one department at most, then a 1:1 relationship would exist between EMPLOYEE and DEPARTMENT. This relationship would record the current manager of each department. However, if you want to keep track of the history of all department managers as well as the current manager, you can create the model shown in Figure 5.10.
+* **Note that in Figure 5.10, the MGR_HIST entity has a 1:M relationship with EMPLOYEE and a 1:M relationship with DEPARTMENT to reflect the fact that an employee could be the manager of many different departments over time, and a department could have many different employee managers.** Because you are recording time-variant data, you must store the DATE_ASSIGN attribute in the MGR_HIST entity to provide the date that  the employee (EMP_NUM) became the department manager. The primary key of MGR_HIST permits the same employee to be the manager of the same department but on different dates. If that scenario is not the case in your environment--**if, for example, an employee is the manager of a department only once-- you could make DATE_ASSIGN a nonprime attribute in the MGR_HIST entity.**
+* Note in Figure 5.10 that "manages" relationship is option in theory and redundant in practice. In any time, you coukld identify the manager of a department by retrieving the most recent DATE_ASSIGN date from MGR_HIST for a given department. On the other hand, the ERD in Figure 5.10 differentiates between current data and historic data. The current manager relationship is implemented by the "manage" relationship between EMPLOYEE and DEPARTMENT. Additionally, the histoic data is managed through EMP_MGR_HIST and DEPT_MGR_HIST. The trade-off with that model is that each time a new manager is assigned to a department, there will be two data modifications: one update in DEPARTMENT entity and one innsert in the MGR_HIST entity
+
+        EMPLOYEE 1:M MGR_HIST
+        MGR_HIST M:1 DEPARTMENT
+
+        EMPLOYEE (EMP_NUM(PK), EMP_LNAME, EMP_FNAME, EMP_INITIAL, EMP_E_MAIL, JOB_CODE, EMP_SALARY)
+        MGR_HIST (EMP_NUM(PK,FK1), DEPT_ID(PK,FK2), PK)
+        DEPARTMENT (DEPT_ID(PK), DEPT_NAME, EMP_NUM(FK), DATE_ASSIGN)
+        
+
+
+        Table 5.3: DESIRABLE PRIMARY KEY CHARACTERTISCS
+        * unique values: The PK must uniquely identify each entity instance. A primary key must be able to guarantee unique values. It can not contain nulls.
+        * Nonintelligent: The PK should not have embedded semantic meaning other than to uniquely identify each entity instance. An attribute with embedded semantic meaning is probably better used as a descriptive characteristic of the entity as an identifier. For example, a student ID of 650973 would be preferred over Smith, Martha L, as a primary key identifier.
+        * No change over time: If an attribute has semantic meaning, it might be subject to updates, which is why names do not make good primary keys. If Vickie Smith is the primary key, what happens if she changes her name when she gets married? if a primary key is subject to change, the foreign key values must be updated, thus adding to the database work load. Furthermore, changing a primary key value means that you are basically changing the identity of an entity. In short, the PK should be permanent and unchangeable.
+        * Preferably single-attribute: A primary key should have the minimum number of attributes possible (irreducible). Single-attribute primary keys are desirable but not required. Single-attribute primary keys simplify the implementation of foreign keys. Having multiple-attribute primary keys can cause primary keys of related entities to grow through the possible addition of many attributes, thus adding to the database workload and making (application) coding more cumbersome
+        * Preferably numeric: Unique values can be better managed when they are numeric, because the database can use internal routines to implement a counter-style attribute that automaticall increments values with the addition of each new row. In fact, most database systems include the ability to use special constructs, such as Autonumber in Microsoft Access, sequence in Oracle, and uniqueidentifier in MS SQL Server to support self-incrementing primary key attributes
+        * Security-compliant: The selected primary key must not be composed of any attribute(s) that might be considered a security risk or violation. For example, using a Social Security number as a PK in an EMPLOYEE table is not a good idea.
+
+
 
 
 
@@ -459,3 +526,113 @@ a nonprime attribute as an attribute that is not a part of any candidate key
 page 220
 
 END Chapter 6
+
+# Chapter 7: Introduction to SQL
+* SQL focuses on data definition (creating tables and index) and data manipulation (adding, modifying, deleting, and retrieving data)
+* SQL functions fit into several broad categories:
+
+        * It is a data manipulation language (DML). SQL includes commands to insert, update, delete, and retrieve data within the database table. The data manipulation commands you will learn in this chapter are list in Table #1 below. In this chapter, we will concentrate on the commands to retrieve data in interesting ways.
+        * It is a data definition language (DDL). SQL includes commands to create database objects such as tables, indexes, and views, as well as commands to define access rights to those database objects. Some common data definition commands you will learn about in Chapter 8, Advanced SQL, are list in Table #2.
+        * It is a transaction control language (TCL). The DML commands in SQL are executed within the context of a **transaction**, which is a logical unit of work composed of one or more SQL statements, as defined by business rules (see Chapter 10, Transaction Management and Concurrency Control). SQL provides commands to control the processing of these statements an indivisible unit of work. These will be discussed in Chapter 8, after you learn about the DML commands that compose a transaction.
+        * It is a data control language (DCL). Data control commands are used to control access to data objects, such as giving a one user permission to only view the PRODUCT table, and g iving another use permission to change the data in the PRODUCT table. Common TCL and DCL commands are shown in Table #3.
+
+* SQL is relatively easy to learn. Its basic command set has a vocabulary of fewer than 100 words. Better yet, SQL is a nonprocedural language: you merely command what is to be done; you do not have to worry about how. For example, a single command creates the complex table structures required to store and manipulate data successfully; end users and programmers do not need to know the physical data storage format or the complex activities that take place when a SQL command is executed.
+* The American National Standards Institute (ANSI) prescribes a standard SQL. The ANSI SQL standards are also accepted by the International Organization for Standardization (ISO), a consortium composed of national standards bodies of more than 150 countries. Although adherence to the ANSI/ISO SQL standard is usually required in commercial and government contract database specifications, many RDBMS vendors add their own special enhancements. Consequently, it is **seldom possible to move** a SQL-based application from one RDBMS to another without making some changes.
+
+
+        Table #1
+        SQL DATA MANIPULATION COMMANDS
+
+        SELECT: Selects attributes from rows in one or more tables or views
+            FROM: Specifies the tables fromm which data should be retrieved
+            WHERE: Restricts the selection of rows based on a conditional expression
+            GROUP BY: Groups the selected rows based on one or more attributes
+            HAVING: Restricts the selectino of grouped rows based on a condition
+            ORDER BY: Orders the selected rows based on one or more attributes
+        INSERT: Inserts row(s) into a table
+        UPDATE: Modifies an attribute's values in one or more table's rows
+        DELETE: Deletes one or more rows from a table
+        Comparison operators
+            =, <, >, <=, >=, <>, !=: Used in conditional expressions
+        Logical operators
+            AND/OR/NOT: used in conditional expressions
+        Special operators: used in conditional expressions
+            BETWEEN: Checks whether an attribute value is within a range
+            IN: Checks whether an attribute value matches any values any value within a value list
+            LIKE: Check whether an attribute value matches a given string pattern
+            EXISTS: Check whether a subquery returns any rows
+            DISTINCT: Limits values to unique value
+        Aggregate functions: Used with SELECT to return mathematical summaries on columns
+            COUNT: Returns the number of rows with non-null values for a given column
+            MIN: Returns the minimum attribute value found in a given column
+            MAX: Returns the maximum attribute value found in a given column
+            SUM: Returns the sum of all values for a given column
+            AVG: Returns the average of all values for a given column
+
+
+        Table #2
+        SQL DATA Definition COMMMANDS
+        CREATE SCHEMA AUTHORIZATION: Creates a database schema
+        CREATE TABLE: Creates a new talbe in the user's database schema
+            NOT NULL: Ensures that a column will not have null values
+            UNIQUE: Ensures that a column will not have duplicate values
+            PRIMARY KEY: Defines a primary key for a table
+            FOREIGN KEY: Defines a foreign key for a table
+            DEFAULT: Defines a default value for a column (when no value is given)
+            CHECK: Validates data in an attribute
+        CREATTE INDEX: Create an index for a table
+        CREATE VIEW: Creates a dynamic subset of rows and columns from one or more tables
+        ALTER TABLE: Modifies a table's definition (adds, modifies, or deletes attributes or constraints)
+        CREATE TABLE AS: Create a new table based on a query in the user's database schema
+        DROP TABLE: Permanently deletes a table (and its data)
+        DROP INDEX: Permanently deletes an index
+        DROP VIEW: Permanently deletes a view
+
+        OTHER SQL COMMAND
+        Transaction Control Language
+            COMMIT: Permanently saves data changes
+            ROLLBACK: Restores data to its original values
+        Data Control Language
+            GRANT: Gives a user permission to take a system action or access a data object
+            REVOKE: Removes a previously granted permission from a user
+
+SKIM: ALL REMEMBERED till 7-7
+
+### SQL Function
+* CONVERT: Convert can be used to perform a wide array of data type conversions as discussed. It can also be used to format date data.
+
+        CONVERT(varchar(length),date_value,fmt_code)
+        fmt_code=format used; can be:
+        1: MM/DD/YY
+        101: MM/DD/YYYY
+        2: YY.MM.DD
+        102:YY.MM.DD
+        3:DD/MM/YY
+        103: DD/MM/YYYY
+* YEAR: Returns a four-digit year
+* MONTH: returns a two-digit month code
+* DAY: Returns the number of the day 
+* GETDATE(): SQL Server: Return today's date
+* DATEADD SQL Server: Add a number of selected time period to a date. Syntax: DATEADD(datepart, number, date) Example: DATEADD(day,90,P_INDATE)
+* DATEDIFF SQL Server: Subtracts two dates. DATEDIFF(datepart, startdate,enddate). Example: DATEDIFF(date,P_INDATE, GETDATE())
+
+get to 7-10 beginning
+
+
+(CL): Got wrong:
+
+        ALTER TABLE Persons
+            ADD CONSTRAINT df_City
+            DEFAULT 'Sandnes' FOR City;
+
+        Not: 
+
+        ALTER TABLE Persons
+            Modify City DEFAULT 'Sandnes'
+
+
+* (CL): AND has higher precedence than OR
+
+You delete the many side first
+
+you insert the one side first
